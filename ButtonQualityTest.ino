@@ -10,13 +10,12 @@
 const int BUTTON_PORT = 7; //D7
 const int SYSLED = 13; //D13
 
-const int MXSIZ = 600;
+const int MXSIZ = 280;
 int cx;
-unsigned int cycl[MXSIZ+4];
-
+unsigned long cycl[MXSIZ+2];
+unsigned long cyCt;
 enum ST {ST0, ST_NEUTRAL, ST_HIGH, ST_LOW, ST_ERR} state;
 unsigned long millis0;
-unsigned long cyCt;
 unsigned long oneSec;
 unsigned int mxBouncing; //maximum cycles of bouncing
 int dPortVal, dPortVal0;
