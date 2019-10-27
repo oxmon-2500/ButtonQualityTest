@@ -21,9 +21,9 @@ Output:
 
 <pre>
 Every press on button produces the following line: HiLo [ HiLo[*CT] ... ] BT ns
-HiLo - the number (hex) of cycles related duration of high/low signal
+HiLo - the number (hex) of cycles related to the duration of high/low signal
 ct   - repetition;  1*5 means 1 1 1 1 1
-BT   - bouncing time in nSec, maximum over multiple tests
+BT   - bouncing time in nSec, a maximum over multiple tests
 
 Example output:
 
