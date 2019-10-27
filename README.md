@@ -1,7 +1,17 @@
 Arduino: Testing Push Button Quality
 ------------------------------------
 
-System LED:  
+<pre>
+     5V        Dx
+     ^     o    ^
+     |    /     |     +-----+
+     +---+  ----+-----| 10k |---+
+                      +-----+   |
+                               ___
+                                _
+</pre>
+
+System LED (D13):  
 - steady  : indicates ready for push 
 - blinking: buffer overflow: to many High, Low oscillations
   
@@ -10,16 +20,13 @@ Output:
 - All numbers are shown in hex 
 
 <pre>
-     5V        D4
-     ^     o    .
-     |    /     |     +-----+
-     +---+  ----+-----| 10k |---+
-                      +-----+   |
-                               ___
-                                _
-</pre>
+Every press on button produces the following line: HiLo [ HiLo[*CT] ... ] BT ns
+HiLo - the number (hex) of cycles related duration of high/low signal
+ct   - repetition;  1*5 means 1 1 1 1 1
+BT   - bouncing time in nSec, maximum over multiple tests
 
-<pre>
+Example output:
+
 Push Button Quality Test
 Relation between time and cycles:
 +-time--+-cycles-+
@@ -27,11 +34,6 @@ Relation between time and cycles:
 |100 ms |   45E0 |
 | 10 ms |    6FC |
 +-------+--------+
-Every press on button produces the following line:
-The number (hex) of cycles related to Hi,Lo,Hi,Lo,....
-1*5 means 1 1 1 1 1
-The last value is maximal (over multiple tests) bouncing time in nSec
-Example output:
  59BA A 1*C9 1179ns
  584D 1179ns
 2 1 66C4 1179ns
