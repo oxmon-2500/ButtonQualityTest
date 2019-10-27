@@ -10,9 +10,9 @@
 const int BUTTON_PORT = 7; //D7
 const int SYSLED = 13; //D13
 
-const int MXSIZ = 200;
+const int MXSIZ = 600;
 int cx;
-unsigned long cycl[MXSIZ+4];
+unsigned int cycl[MXSIZ+4];
 
 enum ST {ST0, ST_NEUTRAL, ST_HIGH, ST_LOW, ST_ERR} state;
 unsigned long millis0;
@@ -112,7 +112,7 @@ void loop(void){
 
 void report(){
   int ct=0;
-  unsigned long last=cycl[0];
+  unsigned int last=cycl[0];
   Serial.print(" ");
   Serial.print(cycl[0], HEX);
   for(int ix=1; ix<cx; ++ix){
@@ -121,7 +121,7 @@ void report(){
     }else{
       if (ct>0){
         Serial.print("(");
-        Serial.print(ct+1);
+        Serial.print(ct+1, HEX);
         Serial.print(")");
         ct = 0;
       }
