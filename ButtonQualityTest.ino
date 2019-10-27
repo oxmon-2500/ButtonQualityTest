@@ -18,6 +18,7 @@ enum ST {ST0, ST_NEUTRAL, ST_HIGH, ST_LOW, ST_ERR} state;
 unsigned long millis0;
 unsigned long cyCt;
 unsigned long oneSec;
+unsigned int mxBouncing; //maximum cycles of bouncing
 int dPortVal, dPortVal0;
 void report(); //proto
 
@@ -31,7 +32,7 @@ public:
     ms0=0;
   }
   boolean doBlinkErr(){
-    if (millis()-ms0 >=150){
+    if (millis()-ms0 >=100){
       ms0=millis();
       flip = !flip;  
       digitalWrite(SYSLED, flip ? HIGH : LOW);
@@ -60,13 +61,17 @@ void loop(void){
       //
       if (millis()-millis0 > 1000){
         oneSec = cyCt;
-        Serial.println("      cycles (hex)");
-        Serial.print(" 1 sec: ");
-        Serial.println(oneSec, HEX);
-        Serial.print("100 ms:  ");
-        Serial.println(oneSec/10, HEX);
-        Serial.print(" 10 ms:   ");
-        Serial.println(oneSec/100, HEX);
+        Serial.println("+-time--+-cycles-+");
+        Serial.print  ("| 1 sec |  ");
+        Serial.print  (oneSec, HEX);
+        Serial.println(" |");
+        Serial.print  ("|100 ms |   ");
+        Serial.print  (oneSec/10, HEX);
+        Serial.println(" |");
+        Serial.print  ("| 10 ms |    ");
+        Serial.print  (oneSec/100, HEX);
+        Serial.println(" |");
+        Serial.println("+-------+--------+");
         state = ST_NEUTRAL;
         digitalWrite(SYSLED, HIGH);
         cyCt=0;
@@ -110,7 +115,14 @@ void loop(void){
   }
 }
 
-int maxPos(){
+unsigned int cyclToNs(unsigned int cyNo){
+  return (unsigned long)cyNo * 1000000l / oneSec;
+}
+
+unsigned int maxBouncingMs(){
+  if (cx==1){
+    return cyclToNs(mxBouncing);
+  }
   int pmx=0, px;
   //find max value position
   for(px=0; px<cx; ++px){
@@ -118,8 +130,20 @@ int maxPos(){
       pmx = px;
     }
   }
-  return pmx;  
+  // count bouncing cycles before and after maxValue
+  unsigned int bcBefore=0;
+  for(px=0; px<pmx; ++px){
+    bcBefore+=cycl[px];
+  }
+  unsigned int bcAfter=0;
+  for(px=pmx+1; px<cx; ++px){
+    bcAfter+=cycl[px];
+  }
+  unsigned int maxB = bcBefore>bcAfter? bcBefore : bcAfter; //max of both  
+  mxBouncing = maxB > mxBouncing? maxB : mxBouncing;
+  return cyclToNs(mxBouncing);
 }
+
 void report(){
   int ct=0;
   unsigned int last=cycl[0];
@@ -130,9 +154,8 @@ void report(){
       ct++;
     }else{
       if (ct>0){
-        Serial.print("(");
+        Serial.print("*");
         Serial.print(ct+1, HEX);
-        Serial.print(")");
         ct = 0;
       }
       Serial.print(" ");
@@ -140,7 +163,13 @@ void report(){
       last=cycl[ix];
     }
   }
-  Serial.println();
+  if (ct>0){
+    Serial.print("*");
+    Serial.print(ct+1, HEX);
+  }
+  Serial.print(" ");
+  Serial.print(maxBouncingMs());
+  Serial.println("ns");
   cx = 0;
 }
 void errState(){
