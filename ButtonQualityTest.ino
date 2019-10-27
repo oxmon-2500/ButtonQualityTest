@@ -110,6 +110,16 @@ void loop(void){
   }
 }
 
+int maxPos(){
+  int pmx=0, px;
+  //find max value position
+  for(px=0; px<cx; ++px){
+    if (cycl[px]>cycl[pmx]){
+      pmx = px;
+    }
+  }
+  return pmx;  
+}
 void report(){
   int ct=0;
   unsigned int last=cycl[0];
