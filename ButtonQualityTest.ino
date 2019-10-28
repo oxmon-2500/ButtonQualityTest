@@ -7,7 +7,7 @@
 //                               ___
 //                                _
 
-const int BUTTON_PORT = 7; //D7
+const int BUTTON_PORT = 10; //D7
 const int SYSLED = 13; //D13
 
 const int MXSIZ = 280;
@@ -114,13 +114,13 @@ void loop(void){
   }
 }
 
-unsigned int cyclToNs(unsigned int cyNo){
+unsigned int cyclToMicSec(unsigned int cyNo){
   return (unsigned long)cyNo * 1000000l / oneSec;
 }
 
-unsigned int maxBouncingMs(){
+unsigned int maxBouncingMics(){
   if (cx==1){
-    return cyclToNs(mxBouncing);
+    return cyclToMicSec(mxBouncing);
   }
   int pmx=0, px;
   //find max value position
@@ -140,7 +140,7 @@ unsigned int maxBouncingMs(){
   }
   unsigned int maxB = bcBefore>bcAfter? bcBefore : bcAfter; //max of both  
   mxBouncing = maxB > mxBouncing? maxB : mxBouncing;
-  return cyclToNs(mxBouncing);
+  return cyclToMicSec(mxBouncing);
 }
 
 void report(){
@@ -167,8 +167,8 @@ void report(){
     Serial.print(ct+1, HEX);
   }
   Serial.print(" ");
-  Serial.print(maxBouncingMs());
-  Serial.println("ns");
+  Serial.print(maxBouncingMics());
+  Serial.println("micSec");
   cx = 0;
 }
 void errState(){
