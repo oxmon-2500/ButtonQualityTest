@@ -7,42 +7,24 @@
 //                               ___
 //                                _
 
-const int BUTTON_PORT = 10; //D7
+const int BUTTON_PORT = 4; //Dx
 const int SYSLED = 13; //D13
 
 const int MXSIZ = 280;
 int cx;
 unsigned long cycl[MXSIZ+2];
 unsigned long cyCt;
-enum ST {ST0, ST_NEUTRAL, ST_HIGH, ST_LOW, ST_ERR} state;
+enum ST {ST0, ST_NEUTRAL, ST_HIGH, ST_LOW} state;
 unsigned long millis0;
 unsigned long oneSec;
 unsigned int mxBouncing; //maximum cycles of bouncing
 int dPortVal, dPortVal0;
-void report(); //proto
-
-class blinkErr {
-private:
-  boolean flip;
-  unsigned long ms0;
-public:
-  blinkErr(){
-    flip=false;
-    ms0=0;
-  }
-  boolean doBlinkErr(){
-    if (millis()-ms0 >=100){
-      ms0=millis();
-      flip = !flip;  
-      digitalWrite(SYSLED, flip ? HIGH : LOW);
-    }
-    return flip;
-  }
-} blErr;
+void report()      ; //proto
+void reportHeader(); //proto
 
 void setup(void){
   // start serial port
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Push Button Quality Test");
   millis0 = millis();
   state = ST0;
@@ -71,6 +53,7 @@ void loop(void){
         Serial.print  (oneSec/100, HEX);
         Serial.println(" |");
         Serial.println("+-------+--------+");
+        reportHeader();
         state = ST_NEUTRAL;
         digitalWrite(SYSLED, HIGH);
         cyCt=0;
@@ -85,7 +68,7 @@ void loop(void){
       break;
     case ST_HIGH:
       if (!digitalRead(BUTTON_PORT)){
-        cycl[cx++] = cyCt; if (cx>=MXSIZ) {errState(); break;}
+        cycl[cx++] = cyCt; if (cx>=MXSIZ) {cx=0;}
         cyCt = 0;
         state = ST_LOW;
       }
@@ -99,16 +82,9 @@ void loop(void){
         return;
       }
       if (digitalRead(BUTTON_PORT)){
-        cycl[cx++] = cyCt; if (cx>=MXSIZ) {errState(); break;}
+        cycl[cx++] = cyCt; if (cx>=MXSIZ) {cx=0;}
         cyCt = 0;
         state = ST_LOW;
-      }
-      break;
-    case ST_ERR:
-      blErr.doBlinkErr();
-      if (millis()-millis0 > 3000){
-        digitalWrite(SYSLED, HIGH);
-        state = ST_NEUTRAL;
       }
       break;
   }
@@ -143,10 +119,18 @@ unsigned int maxBouncingMics(){
   return cyclToMicSec(mxBouncing);
 }
 
+void reportHeader(){
+  Serial.println("    +--------- max bouncing time in µSec");
+  Serial.println("    |      +-- time in cycles: Hi Lo Hi ...");
+  Serial.println("    |      |");
+  Serial.println("+---o--+---o-------------");
+}
 void report(){
   int ct=0;
   unsigned int last=cycl[0];
-  Serial.print(" ");
+  char bf[15];
+  sprintf(bf, "|%5d | ", maxBouncingMics());
+  Serial.print(bf);
   Serial.print(cycl[0], HEX);
   for(int ix=1; ix<cx; ++ix){
     if (cycl[ix]==last){
@@ -166,14 +150,6 @@ void report(){
     Serial.print("*");
     Serial.print(ct+1, HEX);
   }
-  Serial.print(" ");
-  Serial.print(maxBouncingMics());
-  Serial.println("micSec");
+  Serial.println();
   cx = 0;
-}
-void errState(){
-  Serial.println("buffer overflow!");
-  state = ST_ERR;
-  cx=0;
-  millis0=millis();
 }
